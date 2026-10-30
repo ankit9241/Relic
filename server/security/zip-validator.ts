@@ -127,17 +127,31 @@ export function safelyExtractZip(zipBuffer: Buffer, workspaceDir: string): Extra
     }
 
     // Reject .git/hooks to prevent execution of hook scripts
+    const hasGitHooks = segments.some(
+      (seg, idx) => seg.toLowerCase() === ".git" && segments[idx + 1]?.toLowerCase() === "hooks",
+    );
     if (
+      hasGitHooks ||
       normalizedName.toLowerCase().startsWith(".git/hooks/") ||
       normalizedName.toLowerCase() === ".git/hooks"
     ) {
       continue; // Safely ignore and skip git hooks
     }
 
+    // Git packfiles (.git/objects/pack/*.pack or .git/objects/*) compress repository commit histories
+    // into single consolidated files. Allow them up to Math.min(CONFIG.MAX_EXPANDED_SIZE_BYTES, 250 MB).
+    const isGitPackfile =
+      segments.some((seg) => seg.toLowerCase() === ".git") &&
+      segments.some((seg) => seg.toLowerCase() === "pack" || seg.toLowerCase() === "objects");
+
+    const maxAllowedFileSize = isGitPackfile
+      ? Math.min(CONFIG.MAX_EXPANDED_SIZE_BYTES, 250 * 1024 * 1024)
+      : CONFIG.MAX_FILE_SIZE_BYTES;
+
     // Check individual entry uncompressed size
-    if (entry.header.size > CONFIG.MAX_FILE_SIZE_BYTES) {
+    if (entry.header.size > maxAllowedFileSize) {
       throw new ZipSecurityError(
-        `File ${rawName} uncompressed size exceeds limit of ${CONFIG.MAX_FILE_SIZE_BYTES / (1024 * 1024)} MB.`,
+        `File ${rawName} uncompressed size exceeds limit of ${Math.round(maxAllowedFileSize / (1024 * 1024))} MB.`,
         "FILE_SIZE_EXCEEDED",
       );
     }

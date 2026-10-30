@@ -65,7 +65,7 @@ function AppLayout() {
                   : "overview";
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
+    <div className="flex min-h-screen flex-col md:flex-row" suppressHydrationWarning>
       <aside className="flex shrink-0 flex-col border-b border-border bg-surface md:sticky md:top-0 md:h-screen md:w-56 md:border-b-0 md:border-r">
         <div className="flex h-14 items-center px-5">
           <Wordmark to="/app" />

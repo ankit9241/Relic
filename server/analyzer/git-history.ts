@@ -17,7 +17,24 @@ export interface GitAnalysisResult {
 }
 
 export async function extractGitHistory(workspaceDir: string): Promise<GitAnalysisResult> {
-  const gitDir = path.join(workspaceDir, ".git");
+  let targetDir = workspaceDir;
+
+  if (!fs.existsSync(path.join(targetDir, ".git"))) {
+    try {
+      const items = fs.readdirSync(workspaceDir);
+      for (const item of items) {
+        const sub = path.join(workspaceDir, item);
+        if (fs.existsSync(path.join(sub, ".git")) && fs.statSync(sub).isDirectory()) {
+          targetDir = sub;
+          break;
+        }
+      }
+    } catch {
+      // Ignore directory read errors
+    }
+  }
+
+  const gitDir = path.join(targetDir, ".git");
   if (!fs.existsSync(gitDir)) {
     return {
       available: false,
@@ -35,7 +52,7 @@ export async function extractGitHistory(workspaceDir: string): Promise<GitAnalys
     // Format: COMMIT:<hash>|<iso-date>|<author>|<message>
     const gitArgs = [
       "-C",
-      workspaceDir,
+      targetDir,
       "-c",
       "core.hooksPath=",
       "log",
@@ -112,7 +129,7 @@ export async function extractGitHistory(workspaceDir: string): Promise<GitAnalys
     try {
       const countRes = await execFileAsync(
         "git",
-        ["-C", workspaceDir, "-c", "core.hooksPath=", "rev-list", "--count", "HEAD"],
+        ["-C", targetDir, "-c", "core.hooksPath=", "rev-list", "--count", "HEAD"],
         { timeout: 5000 },
       );
       const parsedCount = Number.parseInt(countRes.stdout.trim(), 10);

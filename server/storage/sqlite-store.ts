@@ -214,7 +214,7 @@ export class SqliteExcavationStore implements ExcavationStore {
   async getJob(jobId: string): Promise<IngestionJob | null> {
     if (this.db) {
       const stmt = this.db.prepare(
-        `SELECT job_id, archive_name, status, progress_percent, error FROM jobs WHERE job_id = ?`,
+        `SELECT job_id, archive_name, status, progress_percent, error, result_id FROM jobs WHERE job_id = ?`,
       );
       const row = stmt.get(jobId) as
         | {
@@ -223,6 +223,7 @@ export class SqliteExcavationStore implements ExcavationStore {
             status: IngestionJob["status"];
             progress_percent: number;
             error: string | null;
+            result_id: string | null;
           }
         | undefined;
 
@@ -233,6 +234,7 @@ export class SqliteExcavationStore implements ExcavationStore {
         status: row.status,
         progressPercent: row.progress_percent,
         error: row.error ?? undefined,
+        resultId: row.result_id ?? undefined,
       };
     }
     return null;

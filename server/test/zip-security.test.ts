@@ -106,19 +106,19 @@ describe("ZIP Ingestion & Security Hardening", () => {
     expect(() => safelyExtractZip(zipBuffer, workspace)).toThrow(/archive is empty/i);
   });
 
-  it("skips .git/hooks directory during extraction to prevent hook execution", () => {
+  it("skips .git/hooks directory during extraction to prevent hook execution even when nested", () => {
     const zip = new AdmZip();
-    zip.addFile(".git/HEAD", Buffer.from("ref: refs/heads/main"));
-    zip.addFile(".git/hooks/pre-commit", Buffer.from("#!/bin/sh\nexit 1"));
-    zip.addFile("src/code.ts", Buffer.from("export const a = 1;"));
+    zip.addFile("my-repo/.git/HEAD", Buffer.from("ref: refs/heads/main"));
+    zip.addFile("my-repo/.git/hooks/pre-commit", Buffer.from("#!/bin/sh\nexit 1"));
+    zip.addFile("my-repo/src/code.ts", Buffer.from("export const a = 1;"));
 
     const zipBuffer = zip.toBuffer();
     const workspace = createTempDir();
     const result = safelyExtractZip(zipBuffer, workspace);
 
-    expect(result.entryPaths).toContain("src/code.ts");
-    expect(fs.existsSync(path.join(workspace, "src/code.ts"))).toBe(true);
+    expect(result.entryPaths).toContain("my-repo/src/code.ts");
+    expect(fs.existsSync(path.join(workspace, "my-repo/src/code.ts"))).toBe(true);
     // .git/hooks should not be extracted
-    expect(fs.existsSync(path.join(workspace, ".git/hooks/pre-commit"))).toBe(false);
+    expect(fs.existsSync(path.join(workspace, "my-repo/.git/hooks/pre-commit"))).toBe(false);
   });
 });

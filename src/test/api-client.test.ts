@@ -1,10 +1,18 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach, afterEach } from "vitest";
 import { archiveApiClient, ArchiveApiError } from "@/api/client";
 import { archiveAdapter } from "@/data/archive-adapter";
 import { SAMPLE_ARCHIVE } from "@/data/sample-archive";
 
 describe("Archive API client & adapter integration boundary", () => {
-  it("reports engine as disconnected by default", async () => {
+  beforeEach(() => {
+    archiveApiClient.setBaseUrl?.("http://127.0.0.1:59999");
+  });
+
+  afterEach(() => {
+    archiveApiClient.setBaseUrl?.("http://127.0.0.1:3001");
+  });
+
+  it("reports engine as disconnected when backend is unreachable", async () => {
     const config = await archiveApiClient.getEngineStatus();
     expect(config.status).toBe("disconnected");
     expect(config.capabilities.deterministicAnalysis).toBe(true);

@@ -27,6 +27,7 @@ export interface ArchiveApiClient {
   submitArchive(file: File): Promise<IngestionJob>;
   getIngestionStatus(jobId: string): Promise<IngestionJob | null>;
   interrogateExcavation(id: string, question: string): Promise<InterrogationResult>;
+  setBaseUrl?(url: string): void;
 }
 
 export const defaultEngineConfig: EngineConfig = {

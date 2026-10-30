@@ -6,11 +6,22 @@ export const CONFIG = {
   CORS_ORIGIN: process.env["CORS_ORIGIN"] || "*",
 
   // Ingestion limits
-  MAX_ZIP_SIZE_BYTES: 200 * 1024 * 1024, // 200 MB compressed
-  MAX_EXPANDED_SIZE_BYTES: 500 * 1024 * 1024, // 500 MB uncompressed limit
-  MAX_FILE_COUNT: 10000, // Maximum files inside archive
-  MAX_FILE_SIZE_BYTES: 10 * 1024 * 1024, // 10 MB limit per file for content scanning
-  MAX_NESTING_DEPTH: 25, // Maximum folder hierarchy depth
+  MAX_ZIP_SIZE_BYTES: Number.parseInt(
+    process.env["MAX_ARCHIVE_SIZE_BYTES"] || String(200 * 1024 * 1024),
+    10,
+  ), // 200 MB compressed limit
+  MAX_EXPANDED_SIZE_BYTES: Number.parseInt(
+    process.env["MAX_EXPANDED_SIZE_BYTES"] || String(500 * 1024 * 1024),
+    10,
+  ), // 500 MB uncompressed limit
+  MAX_FILE_COUNT: Number.parseInt(process.env["MAX_FILE_COUNT"] || "10000", 10), // Maximum files inside archive
+  MAX_FILE_SIZE_BYTES: Number.parseInt(
+    process.env["MAX_SINGLE_FILE_BYTES"] ||
+      process.env["MAX_FILE_SIZE_BYTES"] ||
+      String(100 * 1024 * 1024),
+    10,
+  ), // 100 MB default limit per file
+  MAX_NESTING_DEPTH: Number.parseInt(process.env["MAX_NESTING_DEPTH"] || "25", 10), // Maximum folder hierarchy depth
 
   // Storage and temporary paths
   STORAGE_DIR: path.resolve(process.env["STORAGE_DIR"] || "./data"),

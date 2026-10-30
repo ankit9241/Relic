@@ -129,7 +129,8 @@ export function isIndexableTextFile(normalizedPath: string): boolean {
   if (isBinaryFile(normalizedPath)) return false;
 
   // Exclude git internal metadata from text indexing, except history parsing
-  if (normalizedPath.startsWith(".git/") || normalizedPath === ".git") return false;
+  const parts = normalizedPath.split("/").filter(Boolean);
+  if (parts.some((p) => p.toLowerCase() === ".git")) return false;
 
   return true;
 }

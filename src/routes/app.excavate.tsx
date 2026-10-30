@@ -64,28 +64,31 @@ function Excavate() {
     };
   }, []);
 
+  const activeJobId = activeJob?.jobId;
+  const activeJobStatus = activeJob?.status;
+
   // Poll active ingestion job if processing
   useEffect(() => {
-    if (!activeJob || activeJob.status === "completed" || activeJob.status === "failed") {
+    if (!activeJobId || activeJobStatus === "completed" || activeJobStatus === "failed") {
       return;
     }
 
-    const intervalId = setInterval(async () => {
+    let isPolling = true;
+
+    const poll = async () => {
       try {
-        const updated = await archiveApiClient.getIngestionStatus(activeJob.jobId);
-        if (!updated) return;
+        const updated = await archiveApiClient.getIngestionStatus(activeJobId);
+        if (!isPolling || !updated) return;
 
         setActiveJob(updated);
 
         if (updated.status === "completed" && updated.resultId) {
-          clearInterval(intervalId);
           // Fetch the completed excavation dossier
           const dossier = await archiveApiClient.getExcavation(updated.resultId);
-          if (dossier) {
+          if (isPolling && dossier) {
             setCompletedDossier(dossier);
           }
         } else if (updated.status === "failed") {
-          clearInterval(intervalId);
           setOperationError({
             message: updated.error || "Analysis failed during extraction or processing.",
             code: "ANALYSIS_FAILED",
@@ -94,10 +97,15 @@ function Excavate() {
       } catch (pollErr) {
         console.error("Status polling error:", pollErr);
       }
-    }, 800);
+    };
 
-    return () => clearInterval(intervalId);
-  }, [activeJob]);
+    const intervalId = setInterval(poll, 800);
+
+    return () => {
+      isPolling = false;
+      clearInterval(intervalId);
+    };
+  }, [activeJobId, activeJobStatus]);
 
   const accept = (f: File | undefined) => {
     if (!f) return;
@@ -186,7 +194,7 @@ function Excavate() {
   }
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-12">
+    <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-12" suppressHydrationWarning>
       <div className="lg:col-span-5">
         <Eyebrow>Operation / new excavation</Eyebrow>
         <h1 className="mt-6 font-display text-5xl font-medium leading-[0.98] md:text-6xl">
@@ -391,7 +399,7 @@ function Excavate() {
               {activeJob.status === "failed" && (
                 <div className="mt-6 border-t border-border pt-4">
                   <p className="font-mono text-sm text-destructive">
-                    {activeJob.error || "Analysis failed."}
+                    {activeJob.error || operationError?.message || "Analysis failed."}
                   </p>
                   <button
                     onClick={handleReset}
