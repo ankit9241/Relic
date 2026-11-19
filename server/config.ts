@@ -17,9 +17,25 @@ function resolvePort(): number {
   return 3001;
 }
 
+function resolveHost(): string {
+  // On Render or containerized production, ALWAYS bind to 0.0.0.0
+  // Even if user configured HOST=127.0.0.1 in Render environment variables
+  if (process.env["RENDER"] === "true" || process.env["NODE_ENV"] === "production") {
+    return "0.0.0.0";
+  }
+
+  const envHost = process.env["HOST"];
+  if (envHost && envHost !== "127.0.0.1" && envHost !== "localhost") {
+    return envHost;
+  }
+
+  // Default to 0.0.0.0 so all network interfaces can connect
+  return "0.0.0.0";
+}
+
 export const CONFIG = {
   PORT: resolvePort(),
-  HOST: process.env["HOST"] || "0.0.0.0",
+  HOST: resolveHost(),
   CORS_ORIGIN: process.env["CORS_ORIGIN"] || "*",
 
   // Ingestion limits
