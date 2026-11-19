@@ -1,8 +1,14 @@
 import path from "node:path";
 
+const storageDir = path.resolve(process.env["STORAGE_DIR"] || "./data");
+const tempDir = path.resolve(process.env["TEMP_DIR"] || "./tmp");
+const dbPath = path.resolve(
+  process.env["DB_PATH"] || path.join(storageDir, "dead_archive.db"),
+);
+
 export const CONFIG = {
   PORT: Number.parseInt(process.env["PORT"] || "3001", 10),
-  HOST: process.env["HOST"] || "127.0.0.1",
+  HOST: process.env["HOST"] || (process.env["NODE_ENV"] === "production" ? "0.0.0.0" : "127.0.0.1"),
   CORS_ORIGIN: process.env["CORS_ORIGIN"] || "*",
 
   // Ingestion limits
@@ -24,9 +30,9 @@ export const CONFIG = {
   MAX_NESTING_DEPTH: Number.parseInt(process.env["MAX_NESTING_DEPTH"] || "25", 10), // Maximum folder hierarchy depth
 
   // Storage and temporary paths
-  STORAGE_DIR: path.resolve(process.env["STORAGE_DIR"] || "./data"),
-  TEMP_DIR: path.resolve(process.env["TEMP_DIR"] || "./tmp"),
-  DB_PATH: path.resolve(process.env["DB_PATH"] || "./data/dead_archive.db"),
+  STORAGE_DIR: storageDir,
+  TEMP_DIR: tempDir,
+  DB_PATH: dbPath,
 
   // Ollama local AI synthesis settings
   OLLAMA_BASE_URL: process.env["OLLAMA_BASE_URL"] || "http://localhost:11434",

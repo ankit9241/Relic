@@ -28,11 +28,20 @@ export class SqliteExcavationStore implements ExcavationStore {
     }
 
     try {
-      // Dynamic import to handle environments gracefully in ESM
-      const sqliteModule = (await import("node:sqlite")) as unknown as {
-        DatabaseSync: new (path: string) => SqliteDatabaseSync;
-      };
-      this.db = new sqliteModule.DatabaseSync(this.dbPath);
+      // Dynamic import to handle environments gracefully across Bun and Node.js
+      const isBun = typeof (process as unknown as { versions?: { bun?: string } }).versions?.bun !== "undefined";
+      if (isBun) {
+        const bunSpecifier = "bun:sqlite";
+        const bunSqlite = (await import(bunSpecifier)) as unknown as {
+          Database: new (path: string) => SqliteDatabaseSync;
+        };
+        this.db = new bunSqlite.Database(this.dbPath);
+      } else {
+        const sqliteModule = (await import("node:sqlite")) as unknown as {
+          DatabaseSync: new (path: string) => SqliteDatabaseSync;
+        };
+        this.db = new sqliteModule.DatabaseSync(this.dbPath);
+      }
 
       this.db.exec(`
         PRAGMA journal_mode = WAL;

@@ -37,7 +37,7 @@ dist-ssr
 .env.local
 
 # Local SQLite & Storage Data
-data/
+/data/
 *.db
 *.db-wal
 *.db-shm

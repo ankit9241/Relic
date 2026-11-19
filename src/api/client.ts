@@ -45,6 +45,22 @@ function getApiBaseUrl(): string {
   if (typeof window !== "undefined") {
     const win = window as unknown as { __ENV__?: { VITE_API_URL?: string } };
     if (win.__ENV__?.VITE_API_URL) return win.__ENV__.VITE_API_URL;
+
+    // Check Vite environment variable if injected at build time
+    const metaEnv = (import.meta as unknown as { env?: { VITE_API_URL?: string; PROD?: boolean } })
+      .env;
+    if (metaEnv?.VITE_API_URL) return metaEnv.VITE_API_URL;
+
+    // In production or when accessed from a non-local origin, use same-origin relative paths
+    const isProd = metaEnv?.PROD ?? false;
+    const isRemote =
+      Boolean(window.location?.hostname) &&
+      window.location.hostname !== "localhost" &&
+      window.location.hostname !== "127.0.0.1";
+
+    if (isProd || isRemote) {
+      return "";
+    }
   }
 
   if (typeof process !== "undefined" && process.env?.["VITE_API_URL"]) {
