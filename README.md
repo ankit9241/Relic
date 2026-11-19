@@ -134,18 +134,36 @@ _Note: If Ollama is not installed or offline, RELIC gracefully marks AI capabili
 
 ### 4. Running the Application
 
+#### Option A: Development Mode (with Hot-Reloading)
+
 Run both services in separate terminals:
 
 ```bash
 # Terminal 1: Start the Analysis Engine (Backend)
-npm run server
-# (or with live-reload: npm run server:dev)
+bun run server:dev
+# (or with npm: npm run server:dev)
 
 # Terminal 2: Start the Web Application (Frontend)
-npm run dev
+bun run dev
+# (or with npm: npm run dev)
 ```
 
-Open your browser to `http://localhost:3000`.
+Open your browser to the frontend URL printed in the terminal (default: `http://localhost:8080`).
+
+#### Option B: Production Mode (Unified Single Service)
+
+Build and run both the API backend and frontend SSR as a single application:
+
+```bash
+# Build client, SSR, and Nitro server
+bun run build
+
+# Start the unified server
+bun run start
+# (or with npm: npm start)
+```
+
+Open your browser to `http://localhost:3001` (or your configured `PORT`).
 
 ---
 
