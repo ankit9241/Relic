@@ -8,8 +8,10 @@ async function main() {
   const app = createApp();
 
   const server = app.listen(CONFIG.PORT, CONFIG.HOST, () => {
-    console.log(`RELIC Analysis Service listening on http://${CONFIG.HOST}:${CONFIG.PORT}`);
+    console.log(`RELIC Production Server listening on http://${CONFIG.HOST}:${CONFIG.PORT}`);
+    console.log(`Port binding: ${CONFIG.HOST}:${CONFIG.PORT} (process.env.PORT=${process.env["PORT"] ?? "unset"})`);
     console.log(`Health check: http://${CONFIG.HOST}:${CONFIG.PORT}/api/health`);
+    console.log(`Frontend SSR: http://${CONFIG.HOST}:${CONFIG.PORT}/`);
   });
 
   const shutdown = async () => {

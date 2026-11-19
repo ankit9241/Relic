@@ -6,9 +6,20 @@ const dbPath = path.resolve(
   process.env["DB_PATH"] || path.join(storageDir, "dead_archive.db"),
 );
 
+function resolvePort(): number {
+  const envPort = process.env["PORT"];
+  if (envPort) {
+    const parsed = Number.parseInt(envPort, 10);
+    if (!Number.isNaN(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+  return 3001;
+}
+
 export const CONFIG = {
-  PORT: Number.parseInt(process.env["PORT"] || "3001", 10),
-  HOST: process.env["HOST"] || (process.env["NODE_ENV"] === "production" ? "0.0.0.0" : "127.0.0.1"),
+  PORT: resolvePort(),
+  HOST: process.env["HOST"] || "0.0.0.0",
   CORS_ORIGIN: process.env["CORS_ORIGIN"] || "*",
 
   // Ingestion limits
